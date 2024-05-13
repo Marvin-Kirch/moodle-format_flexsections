@@ -69,7 +69,7 @@ $string['showsection0title_help'] = 'When enabled, the general section will have
 $string['showsection0titledefault'] = 'Show top section title by default';
 $string['showsection0titledefaultdesc'] = 'This defines default setting that will be used for new and existing courses, it can be changed for individual courses in their settings.';
 
-// Deprecated but still can be used in 4.0, to be removed when we have a branch for Moodle 4.1 or later.
+// Deprecated since 4.1 but still can be used in 4.0, to be removed when we have a branch for Moodle 4.1 or later.
 $string['addsection'] = 'Add section';
 $string['addsubsectionfor'] = 'Add subsection for \'{$a}\'';
 $string['cancelmoving'] = 'Cancel moving \'{$a}\'';
