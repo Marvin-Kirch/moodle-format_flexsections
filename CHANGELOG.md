@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+### Added
+- Support for Moodle 4.4
+### Fixed
+- Fixed fatal PHP error on Moodle 4.3 introduced by changes in MDL-81610
+
 ## [4.0.6] - 2023-12-23
 ### Added
 - Adjusted automatic tests for Moodle 4.3

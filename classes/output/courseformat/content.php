@@ -52,8 +52,49 @@ class content extends \core_courseformat\output\local\content {
      * @return \stdClass data context for a mustache template
      */
     public function export_for_template(\renderer_base $output) {
-        /** @var \stdClass $data */
-        $data = parent::export_for_template($output);
+        global $PAGE;
+
+        $format = $this->format;
+
+        // Most formats uses section 0 as a separate section so we remove from the list.
+        $sections = $this->export_sections($output);
+        $initialsection = '';
+        if (!empty($sections)) {
+            $initialsection = array_shift($sections);
+        }
+
+        $data = (object)[
+            'title' => $format->page_title(), // This method should be in the course_format class.
+            'initialsection' => $initialsection,
+            'sections' => $sections,
+            'format' => $format->get_format(),
+            'sectionreturn' => 0,
+        ];
+
+        // The single section format has extra navigation.
+        $singlesectionnum = $this->format->get_section_number();
+        if ($singlesectionnum) {
+            if (!$PAGE->theme->usescourseindex) {
+                $sectionnavigation = new $this->sectionnavigationclass($format, $singlesectionnum);
+                $data->sectionnavigation = $sectionnavigation->export_for_template($output);
+
+                $sectionselector = new $this->sectionselectorclass($format, $sectionnavigation);
+                $data->sectionselector = $sectionselector->export_for_template($output);
+            }
+            $data->hasnavigation = true;
+            $data->singlesection = array_shift($data->sections);
+            $data->sectionreturn = $singlesectionnum;
+        }
+
+        if ($this->hasaddsection) {
+            $addsection = new $this->addsectionclass($format);
+            $data->numsections = $addsection->export_for_template($output);
+        }
+
+        if ($format->show_editor()) {
+            $bulkedittools = new $this->bulkedittoolsclass($format);
+            $data->bulkedittools = $bulkedittools->export_for_template($output);
+        }
 
         // If we are on course view page for particular section.
         if ($this->format->get_viewed_section()) {
