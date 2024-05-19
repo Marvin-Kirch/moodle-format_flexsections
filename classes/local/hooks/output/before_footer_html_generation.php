@@ -34,6 +34,12 @@ class before_footer_html_generation {
      */
     public static function callback(\core\hook\output\before_footer_html_generation $hook): void {
         global $OUTPUT;
+
+        if (during_initial_install() || isset($CFG->upgraderunning)) {
+            // Do nothing during installation or upgrade.
+            return;
+        }
+
         if ($cm = format_flexsections_add_back_link_to_cm()) {
             $hook->add_html($OUTPUT->render_from_template('format_flexsections/back_link_in_cms', [
                 'backtosection' => [

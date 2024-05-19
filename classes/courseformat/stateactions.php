@@ -163,7 +163,8 @@ class stateactions extends  \core_courseformat\stateactions {
     /**
      * Check maxsectionslimit
      *
-     * Only compare the number of sections on the top level.
+     * Only compare the number of sections on the top level. Throws exception if number
+     * of sections is already at the limit. Used as a pre-check for adding/duplicating sections.
      *
      * @param stdClass $course
      * @throws moodle_exception
@@ -171,12 +172,7 @@ class stateactions extends  \core_courseformat\stateactions {
     protected function check_maxsections(stdClass $course) {
         /** @var \format_flexsections $format */
         $format = course_get_format($course->id);
-        $cnt = 0;
-        foreach ($format->get_sections() as $section) {
-            if ($section->section && !$section->parent) {
-                $cnt++;
-            }
-        }
+        $cnt = $format->get_number_of_toplevel_sections();
         $maxsections = $format->get_max_toplevel_sections();
 
         if ($cnt >= $maxsections) {

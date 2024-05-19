@@ -784,7 +784,7 @@ class format_flexsections extends core_courseformat\base {
             $currentsectionnum = $this->get_viewed_section();
 
             // Fix the section argument.
-            if ($currentsectionnum) {
+            if ($currentsectionnum && !optional_param('duplicatesection', 0, PARAM_INT)) {
                 $sectioninfo = $this->get_modinfo()->get_section_info($currentsectionnum);
                 if (!$sectioninfo || !$sectioninfo->collapsed) {
                     redirect(course_get_url($this->get_course(), $sectioninfo ? $this->find_collapsed_parent($sectioninfo) : null));
@@ -1409,6 +1409,130 @@ class format_flexsections extends core_courseformat\base {
         } else {
             return parent::get_section_number();
         }
+    }
+
+    /**
+     * Get number of sections without a parent
+     *
+     * @return int
+     */
+    public function get_number_of_toplevel_sections(): int {
+        $cnt = 0;
+        foreach ($this->get_sections() as $section) {
+            if ($section->section && !$section->parent) {
+                $cnt++;
+            }
+        }
+        return $cnt;
+    }
+
+    /**
+     * Find next section that is sibling of a given section
+     *
+     * @param section_info $section
+     * @return section_info|null
+     */
+    protected function find_next_sibling(section_info $section): ?section_info {
+        $modinfo = get_fast_modinfo($this->courseid);
+        $allsections = $modinfo->get_section_info_all();
+        $found = false;
+        foreach ($allsections as $s) {
+            if ($s->id == $section->id) {
+                $found = true;
+            } else if ($s->parent == $section->parent && $found) {
+                return $s;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Helper method for duplicating sections
+     *
+     * @param section_info $originalsection
+     * @param int $newparent
+     * @param bool $istop
+     * @return stdClass
+     */
+    protected function duplicate_section_properties(section_info $originalsection, int $newparent, bool $istop = false): stdClass {
+        $course = $this->get_course();
+        $newsection = course_create_section($course);
+
+        if (!empty($originalsection->name) && $istop) {
+            $newsection->name = get_string('duplicatedsection', 'moodle', $originalsection->name);
+        } else {
+            $newsection->name = $originalsection->name;
+        }
+        $newsection->summary = $originalsection->summary;
+        $newsection->summaryformat = $originalsection->summaryformat;
+        $newsection->visible = $originalsection->visible;
+        $newsection->availability = $originalsection->availability;
+
+        foreach (array_keys($this->section_format_options()) as $key) {
+            $newsection->$key = $originalsection->$key ?? null;
+        }
+        $newsection->parent = $newparent;
+        course_update_section($course, $newsection, $newsection);
+        $this->update_section_format_options($newsection);
+
+        return $newsection;
+    }
+
+    /**
+     * Duplicate a section
+     *
+     * @param section_info $originalsection The section to be duplicated
+     * @return section_info The new duplicated section
+     */
+    public function duplicate_section(section_info $originalsection): section_info {
+        $course = $this->get_course();
+        $modinfo = $this->get_modinfo();
+        $oldsectioninfo = $modinfo->get_section_info($originalsection->section);
+        $createbefore = $this->find_next_sibling($oldsectioninfo);
+
+        // When duplicating top-level section check that maxsectionslimit is not reached.
+        if (!$oldsectioninfo->parent) {
+            $cnt = $this->get_number_of_toplevel_sections();
+            $maxsections = $this->get_max_toplevel_sections();
+
+            if ($cnt >= $maxsections) {
+                throw new moodle_exception('maxsectionslimit', 'moodle', '', $maxsections);
+            }
+        }
+
+        // Find list of all sections that need to be duplicated.
+        $sectionstocopy = [];
+        $allsections = $modinfo->get_section_info_all();
+        $addsectiontocopy = function(section_info $s) use (&$addsectiontocopy, &$allsections, &$sectionstocopy) {
+            $sectionstocopy[$s->section] = $s;
+            foreach ($allsections as $sc) {
+                if ($sc->parent == $s->section) {
+                    $addsectiontocopy($sc);
+                }
+            }
+        };
+        $addsectiontocopy($oldsectioninfo);
+
+        // Duplicate all sections.
+        $parentmapping = [];
+        foreach ($sectionstocopy as $s) {
+            $newparent = empty($parentmapping) ? $s->parent : $parentmapping[$s->parent]->section;
+            $ns = $this->duplicate_section_properties($s, $newparent, empty($parentmapping));
+            $parentmapping[$s->section] = $ns;
+        }
+
+        // Duplicate all modules.
+        foreach ($sectionstocopy as $s) {
+            foreach (($modinfo->sections[$s->section] ?? []) as $modnumber) {
+                $originalcm = $modinfo->cms[$modnumber];
+                duplicate_module($course, $originalcm, $parentmapping[$s->section]->id, false);
+            }
+        }
+
+        // Move the new section right after the original section.
+        $newsection = $parentmapping[$oldsectioninfo->section]->section;
+        $newsection = $this->move_section($newsection, $oldsectioninfo->parent, $createbefore);
+        return get_fast_modinfo($course)->get_section_info($newsection);
     }
 }
 
