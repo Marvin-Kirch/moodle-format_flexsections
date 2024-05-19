@@ -46,12 +46,16 @@ class content extends \core_courseformat\output\local\content {
     }
 
     /**
-     * Export this data so it can be used as the context for a mustache template (core/inplace_editable).
+     * Override the parent export_for_template, for Moodle 4.4 only
      *
-     * @param \renderer_base $output typically, the renderer that's calling this function
-     * @return \stdClass data context for a mustache template
+     * This function is almost identical to the
+     * \core_courseformat\output\local\content::export_for_template() from Moodle 4.3
+     * except for the $data->sectionreturn being null instead of 0 (otherwise JS does not work)
+     *
+     * @param \renderer_base $output
+     * @return stdClass
      */
-    public function export_for_template(\renderer_base $output) {
+    public function export_for_template_override(\renderer_base $output): stdClass {
         global $PAGE;
 
         $format = $this->format;
@@ -68,7 +72,7 @@ class content extends \core_courseformat\output\local\content {
             'initialsection' => $initialsection,
             'sections' => $sections,
             'format' => $format->get_format(),
-            'sectionreturn' => 0,
+            'sectionreturn' => null,
         ];
 
         // The single section format has extra navigation.
@@ -94,6 +98,23 @@ class content extends \core_courseformat\output\local\content {
         if ($format->show_editor()) {
             $bulkedittools = new $this->bulkedittoolsclass($format);
             $data->bulkedittools = $bulkedittools->export_for_template($output);
+        }
+
+        return $data;
+    }
+
+    /**
+     * Export this data so it can be used as the context for a mustache template (core/inplace_editable).
+     *
+     * @param \renderer_base $output typically, the renderer that's calling this function
+     * @return \stdClass data context for a mustache template
+     */
+    public function export_for_template(\renderer_base $output) {
+        global $CFG;
+        if ((int)($CFG->branch) >= 404) {
+            $data = $this->export_for_template_override($output);
+        } else {
+            $data = parent::export_for_template($output);
         }
 
         // If we are on course view page for particular section.
