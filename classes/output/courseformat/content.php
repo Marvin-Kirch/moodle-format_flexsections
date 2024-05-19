@@ -64,14 +64,14 @@ class content extends \core_courseformat\output\local\content {
             $section = $this->format->get_section($this->format->get_viewed_section());
             if ($section->parent) {
                 $sr = $this->format->find_collapsed_parent($section->parent);
-                $url = $this->format->get_view_url($section->section, array('sr' => $sr));
+                $url = $this->format->get_view_url($section->section, ['sr' => $sr]);
                 $data->backtosection = [
                     'url' => $url->out(false),
-                    'sectionname' => $this->format->get_section_name($section->parent)
+                    'sectionname' => $this->format->get_section_name($section->parent),
                 ];
             } else {
                 $sr = 0;
-                $url = $this->format->get_view_url($section->section, array('sr' => $sr));
+                $url = $this->format->get_view_url($section->section, ['sr' => $sr]);
                 $context = \context_course::instance($this->format->get_courseid());
                 $data->backtocourse = [
                     'url' => $url->out(false),

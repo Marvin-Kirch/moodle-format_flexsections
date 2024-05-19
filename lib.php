@@ -310,7 +310,7 @@ class format_flexsections extends core_courseformat\base {
             return null;
         }
         $sectionname = get_section_name($this->get_course(), $section);
-        $url = course_get_url($this->get_course(), $section->section, array('navigation' => true));
+        $url = course_get_url($this->get_course(), $section->section, ['navigation' => true]);
 
         $sectionnode = $node->add($sectionname, $url, navigation_node::TYPE_SECTION, null, $section->id);
         $sectionnode->nodetype = navigation_node::NODETYPE_BRANCH;
@@ -395,38 +395,38 @@ class format_flexsections extends core_courseformat\base {
      * @return array
      */
     public function section_format_options($foreditform = false): array {
-        return array(
-            'parent' => array(
+        return [
+            'parent' => [
                 'type' => PARAM_INT,
                 'label' => '',
                 'element_type' => 'hidden',
                 'default' => 0,
                 'cache' => true,
                 'cachedefault' => 0,
-            ),
-            'visibleold' => array(
+            ],
+            'visibleold' => [
                 'type' => PARAM_INT,
                 'label' => '',
                 'element_type' => 'hidden',
                 'default' => 1,
                 'cache' => true,
                 'cachedefault' => 0,
-            ),
-            'collapsed' => array(
+            ],
+            'collapsed' => [
                 'type' => PARAM_INT,
                 'label' => get_string('displaycontent', 'format_flexsections'),
                 'element_type' => 'select',
-                'element_attributes' => array(
-                    array(
+                'element_attributes' => [
+                    [
                         FORMAT_FLEXSECTIONS_EXPANDED => new lang_string('showexpanded', 'format_flexsections'),
                         FORMAT_FLEXSECTIONS_COLLAPSED => new lang_string('showcollapsed', 'format_flexsections'),
-                    )
-                ),
+                    ],
+                ],
                 'cache' => true,
                 'cachedefault' => FORMAT_FLEXSECTIONS_EXPANDED,
                 'default' => COURSE_DISPLAY_SINGLEPAGE,
-            )
-        );
+            ],
+        ];
     }
 
     /**
@@ -791,8 +791,8 @@ class format_flexsections extends core_courseformat\base {
 
             if ($currentsectionnum) {
                 navigation_node::override_active_url(new moodle_url('/course/view.php',
-                    array('id' => $this->courseid,
-                        'section' => $currentsectionnum)));
+                    ['id' => $this->courseid,
+                        'section' => $currentsectionnum]));
             }
 
             // If requested, create new section and redirect to course view page.
@@ -828,9 +828,9 @@ class format_flexsections extends core_courseformat\base {
             $moveparent = optional_param('moveparent', null, PARAM_INT);
             $movebefore = optional_param('movebefore', null, PARAM_RAW);
             $sr = optional_param('sr', null, PARAM_RAW);
-            $options = array();
+            $options = [];
             if ($sr !== null) {
-                $options = array('sr' => $sr);
+                $options = ['sr' => $sr];
             }
             if ($movesection !== null && $moveparent !== null && has_capability('moodle/course:update', $context)) {
                 $newsectionnum = $this->move_section($movesection, $moveparent, $movebefore);
@@ -846,7 +846,7 @@ class format_flexsections extends core_courseformat\base {
                 } else {
                     $newvalue = FORMAT_FLEXSECTIONS_EXPANDED;
                 }
-                $this->update_section_format_options(array('id' => $section->id, 'collapsed' => $newvalue));
+                $this->update_section_format_options(['id' => $section->id, 'collapsed' => $newvalue]);
                 if ($newvalue == FORMAT_FLEXSECTIONS_COLLAPSED) {
                     if (!isset($options['sr'])) {
                         $options['sr'] = $this->find_collapsed_parent($section->parent);
@@ -862,13 +862,13 @@ class format_flexsections extends core_courseformat\base {
             if ($marker !== null && has_capability('moodle/course:setcurrentsection', $context) && confirm_sesskey()) {
                 if ($marker > 0) {
                     // Set marker.
-                    $url = course_get_url($this->courseid, $marker, array('sr' => $this->get_viewed_section()));
+                    $url = course_get_url($this->courseid, $marker, ['sr' => $this->get_viewed_section()]);
                     course_set_marker($this->courseid, $marker);
                     redirect($url);
                 } else if ($this->get_course()->marker) {
                     // Remove marker.
                     $url = course_get_url($this->courseid, $this->get_course()->marker,
-                        array('sr' => $this->get_viewed_section()));
+                        ['sr' => $this->get_viewed_section()]);
                     course_set_marker($this->courseid, 0);
                     redirect($url);
                 }
@@ -877,13 +877,13 @@ class format_flexsections extends core_courseformat\base {
             // Change visibility if required.
             $hide = optional_param('hide', null, PARAM_INT);
             if ($hide !== null && has_capability('moodle/course:sectionvisibility', $context) && confirm_sesskey()) {
-                $url = course_get_url($this->courseid, $hide, array('sr' => $this->get_viewed_section()));
+                $url = course_get_url($this->courseid, $hide, ['sr' => $this->get_viewed_section()]);
                 $this->set_section_visible($hide, 0);
                 redirect($url);
             }
             $show = optional_param('show', null, PARAM_INT);
             if ($show !== null && has_capability('moodle/course:sectionvisibility', $context) && confirm_sesskey()) {
-                $url = course_get_url($this->courseid, $show, array('sr' => $this->get_viewed_section()));
+                $url = course_get_url($this->courseid, $show, ['sr' => $this->get_viewed_section()]);
                 $this->set_section_visible($show, 1);
                 redirect($url);
             }
@@ -922,22 +922,22 @@ class format_flexsections extends core_courseformat\base {
         }
 
         // Find the changes in the sections numbering.
-        $origorder = array();
+        $origorder = [];
         foreach ($this->get_sections() as $subsection) {
             $origorder[$subsection->id] = $subsection->section;
         }
-        $neworder = array();
+        $neworder = [];
         $this->reorder_sections($neworder, 0, $section->section, $parent, $before);
         if (count($origorder) != count($neworder)) {
             die('Error in sections hierarchy'); // TODO.
         }
-        $changes = array();
+        $changes = [];
         foreach ($origorder as $id => $num) {
             if ($num == $section->section) {
                 $newsectionnumber = $neworder[$id];
             }
             if ($num != $neworder[$id]) {
-                $changes[$id] = array('old' => $num, 'new' => $neworder[$id]);
+                $changes[$id] = ['old' => $num, 'new' => $neworder[$id]];
                 if ($num && $this->get_course()->marker == $num) {
                     $changemarker = $neworder[$id];
                 }
@@ -952,7 +952,7 @@ class format_flexsections extends core_courseformat\base {
         }
 
         // Build array of required changes in field 'parent'.
-        $changeparent = array();
+        $changeparent = [];
         foreach ($this->get_sections() as $subsection) {
             foreach ($changes as $id => $change) {
                 if ($subsection->parent == $change['old']) {
@@ -966,14 +966,14 @@ class format_flexsections extends core_courseformat\base {
         $transaction = $DB->start_delegated_transaction();
         // Update sections numbers in 2 steps to avoid breaking database uniqueness constraint.
         foreach ($changes as $id => $change) {
-            $DB->set_field('course_sections', 'section', -$change['new'], array('id' => $id));
+            $DB->set_field('course_sections', 'section', -$change['new'], ['id' => $id]);
         }
         foreach ($changes as $id => $change) {
-            $DB->set_field('course_sections', 'section', $change['new'], array('id' => $id));
+            $DB->set_field('course_sections', 'section', $change['new'], ['id' => $id]);
         }
         // Change parents of their subsections.
         foreach ($changeparent as $id => $newnum) {
-            $this->update_section_format_options(array('id' => $id, 'parent' => $newnum));
+            $this->update_section_format_options(['id' => $id, 'parent' => $newnum]);
         }
         $transaction->allow_commit();
         rebuild_course_cache($this->courseid, true);
@@ -995,7 +995,7 @@ class format_flexsections extends core_courseformat\base {
      *    this will be the value of visibleold for the section $section.
      */
     protected function set_section_visible($section, $visibility, $setvisibleold = null) {
-        $subsections = array();
+        $subsections = [];
         $sectionnumber = $this->resolve_section_number($section);
         if (!$sectionnumber && !$visibility) {
             // Can not hide section with number 0.
@@ -1006,14 +1006,14 @@ class format_flexsections extends core_courseformat\base {
             // Can not set section visible when parent is hidden.
             return;
         }
-        $ch = array($section);
+        $ch = [$section];
         while (!empty($ch)) {
             $chlast = $ch;
-            $ch = array();
+            $ch = [];
             foreach ($chlast as $s) {
                 // Store copy of attributes to avoid rebuilding course cache when we need to access section properties.
-                $subsections[] = (object)array('section' => $s->section,
-                    'id' => $s->id, 'visible' => $s->visible, 'visibleold' => $s->visibleold);
+                $subsections[] = (object)['section' => $s->section,
+                    'id' => $s->id, 'visible' => $s->visible, 'visibleold' => $s->visibleold];
                 $ch += $this->get_subsections($s);
             }
         }
@@ -1023,7 +1023,7 @@ class format_flexsections extends core_courseformat\base {
                 if ($setvisibleold === null) {
                     $setvisibleold = $visibility;
                 }
-                $this->update_section_format_options(array('id' => $s->id, 'visibleold' => $setvisibleold));
+                $this->update_section_format_options(['id' => $s->id, 'visibleold' => $setvisibleold]);
             } else {
                 if ($visibility) {
                     if ($s->visibleold) {
@@ -1032,7 +1032,7 @@ class format_flexsections extends core_courseformat\base {
                 } else {
                     if ($s->visible) {
                         set_section_visible($this->courseid, $s->section, $visibility);
-                        $this->update_section_format_options(array('id' => $s->id, 'visibleold' => $s->visible));
+                        $this->update_section_format_options(['id' => $s->id, 'visibleold' => $s->visible]);
                     }
                 }
             }
@@ -1047,7 +1047,7 @@ class format_flexsections extends core_courseformat\base {
      */
     public function get_subsections($section) {
         $sectionnum = $this->resolve_section_number($section);
-        $subsections = array();
+        $subsections = [];
         foreach ($this->get_sections() as $num => $subsection) {
             if ($subsection->parent == $sectionnum && $num != $sectionnum) {
                 $subsections[$num] = $subsection;
@@ -1144,7 +1144,7 @@ class format_flexsections extends core_courseformat\base {
             if ($before && $before->section == $section->section) {
                 return false;
             }
-            $subsections = array();
+            $subsections = [];
             $lastsibling = null;
             foreach ($this->get_sections() as $num => $sibling) {
                 if ($sibling->parent == $parent->section) {
@@ -1259,15 +1259,15 @@ class format_flexsections extends core_courseformat\base {
 
             // Trigger an event for course section deletion.
             $event = \core\event\course_section_deleted::create(
-                array(
+                [
                     'objectid' => $section->id,
                     'courseid' => $course->id,
                     'context' => $context,
                     'other' => [
                         'sectionnum' => $section->section,
                         'sectionname' => $this->get_section_name($section),
-                    ]
-                )
+                    ],
+                ]
             );
             $event->add_record_snapshot('course_sections', $section);
             $event->trigger();
@@ -1435,7 +1435,7 @@ function format_flexsections_before_footer() {
             'backtosection' => [
                 'url' => course_get_url($cm->course, $cm->sectionnum)->out(false),
                 'sectionname' => get_section_name($cm->course, $cm->sectionnum),
-            ]
+            ],
         ]);
     }
     return '';

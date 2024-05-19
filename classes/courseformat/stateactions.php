@@ -123,11 +123,11 @@ class stateactions extends  \core_courseformat\stateactions {
     /**
      * Merging a section with its parent
      *
-     * @param \format_flexsections\courseformat\stateupdates $updates the affected course elements track
+     * @param stateupdates $updates the affected course elements track
      * @param stdClass $course the course object
      * @param int[] $ids not used
-     * @param int $targetsectionid section id to merge up
-     * @param int $targetcmid not used
+     * @param int|null $targetsectionid section id to merge up
+     * @param int|null $targetcmid not used
      */
     public function section_mergeup(
         stateupdates $updates,
@@ -226,9 +226,9 @@ class stateactions extends  \core_courseformat\stateactions {
      * @param stateupdates $updates the affected course elements track
      * @param stdClass $course the course object
      * @param int[] $ids not used
-     * @param int $targetsectionid optional target section id (if not passed section will be appended),
+     * @param int|null $targetsectionid optional target section id (if not passed section will be appended),
      *     the section will be inserted to the same parent AFTER the target section
-     * @param int $targetcmid not used
+     * @param int|null $targetcmid not used
      */
     public function section_add(
         stateupdates $updates,
@@ -320,8 +320,8 @@ class stateactions extends  \core_courseformat\stateactions {
      * @param stateupdates $updates the affected course elements track
      * @param stdClass $course the course object
      * @param int[] $ids section ids
-     * @param int $targetsectionid not used
-     * @param int $targetcmid not used
+     * @param int|null $targetsectionid not used
+     * @param int|null $targetcmid not used
      */
     public function section_delete(
         stateupdates $updates,
