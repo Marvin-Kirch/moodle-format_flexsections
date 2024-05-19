@@ -77,9 +77,7 @@ jobs:
           echo "NVM_DIR=$HOME/.nvm" >> $GITHUB_ENV
 
       - name: Install moodle-plugin-ci
-        run: |
-          moodle-plugin-ci install --plugin ./plugin --db-host=127.0.0.1
-          moodle-plugin-ci add-config "\$CFG->behat_increasetimeout = 2;"
+        run: moodle-plugin-ci install --plugin ./plugin --db-host=127.0.0.1
         env:
           DB: ${{ matrix.database }}
           MOODLE_BRANCH: ${{ matrix.moodle-branch }}
@@ -126,7 +124,7 @@ jobs:
       - name: Behat features
         id: behat
         if: ${{ !cancelled() }}
-        run: moodle-plugin-ci behat --profile firefox
+        run: moodle-plugin-ci behat --profile chrome
 
       - name: Upload Behat Faildump
         if: ${{ failure() && steps.behat.outcome == 'failure' }}
