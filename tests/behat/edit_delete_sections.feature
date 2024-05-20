@@ -34,16 +34,23 @@ Feature: Sections can be edited and deleted in flexsections format
     When I edit the section "2"
     And the field "Section name" matches expression "/^$/"
 
-  Scenario: Edit section summary in flexsections format
+  Scenario: Edit section summary in flexsections format for Moodle 4.1-4.3
+    Given the site is running Moodle version 4.3 or lower
     When I edit the section "2" and I fill the form with:
       | Summary | Welcome to section 2 |
+    Then I should see "Welcome to section 2" in the "Topic 2" "section"
+
+  Scenario: Edit section summary in flexsections format for Moodle 4.4 and above
+    Given the site is running Moodle version 4.4 or higher
+    When I edit the section "2" and I fill the form with:
+      | Description | Welcome to section 2 |
     Then I should see "Welcome to section 2" in the "Topic 2" "section"
 
   Scenario: Edit section default name in flexsections format for Moodle 4.1-4.3
     Given the site is running Moodle version 4.3 or lower
     When I edit the section "2" and I fill the form with:
-      | Custom | 1                      |
-      | New value for Section name      | This is the second topic |
+      | Custom                     | 1                        |
+      | New value for Section name | This is the second topic |
     Then I should see "This is the second topic" in the "This is the second topic" "section"
     And I should not see "Topic 2" in the "region-main" "region"
 
