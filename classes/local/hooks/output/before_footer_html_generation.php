@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace format_flexsections\local\hooks\output;
+require_once($CFG->dirroot.'/course/format/flexsections/lib.php');
 
 /**
  * Hook callbacks for format_flexsections
@@ -33,7 +34,7 @@ class before_footer_html_generation {
      * @param \core\hook\output\before_footer_html_generation $hook
      */
     public static function callback(\core\hook\output\before_footer_html_generation $hook): void {
-        global $OUTPUT;
+        global $OUTPUT, $CFG;
 
         if (during_initial_install() || isset($CFG->upgraderunning)) {
             // Do nothing during installation or upgrade.
